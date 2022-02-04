@@ -1,0 +1,20 @@
+import canmatrix
+import pandas as pd
+import io
+def can_to_df(file_name: str) -> pd.DataFrame:
+    dbs = canmatrix.formats.loadp(file_name)
+    df = pd.DataFrame()
+    for name in dbs:
+        iob = io.BytesIO()
+        canmatrix.formats.dump(dbs[name], iob, export_type="csv")
+        dft = pd.read_csv(io.StringIO(iob.getvalue().decode()))
+        df = pd.concat([df, dft], ignore_index=True)
+    return df
+
+if__name__ = "__main__"
+    
+df=can_to_df("D:\Databases\GB_ASR_VCU_24_24_160_PreEcuC_No_ODX_Modified.arxml")
+
+import os
+os.chdir("D:\Databases")
+df.to_csv("GB_ASR_VCU_24_24_160_PreEcuC_No_ODX_Modified1.csv")
