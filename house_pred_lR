@@ -1,0 +1,151 @@
+import pandas as pd
+import os
+import numpy as np
+from sklearn import linear_model
+
+
+# %%
+os.chdir("D:\Data Science\Python\Linear Regression")
+df = pd.read_csv("House_price.csv")
+
+# %%
+df.head()
+
+# %%
+df.info()
+
+# %%
+df.isnull().sum()
+
+# %%
+df1 = df.dropna()
+
+# %%
+df1.head()
+
+# %%
+df1.isnull().sum()
+
+# %%
+df1.boxplot(column=["Taxi_dist"])
+
+# %%
+def outlier (data,age):
+    Q1 = data[age].quantile(0.25)
+        Q3 = data[age].quantile(0.75)
+	    IQR = Q3 - Q1
+	        data = data.loc[~((data[age]< (Q1 - 1.5*IQR)) | (data[age] > (Q3 + 1.5 * IQR))),]
+		    return data
+
+		    # %%
+		    df1 = outlier(df1,"Taxi_dist")
+		    df1.boxplot(column=["Taxi_dist"])
+
+		    # %%
+		    df1.boxplot(column=["Market_dist"])
+		    df = outlier(df1,"Market_dist")
+
+
+		    # %%
+		    df1.boxplot(column=["Hospital_dist", "Carpet_area", "Builtup_area", "Rainfall", "Price_house"])
+
+		    # %%
+		    df1 = outlier(df1,"Hospital_dist")
+		    df1 = outlier(df1,"Carpet_area" )
+		    df1 = outlier(df1, "Builtup_area")
+		    df1 = outlier(df1, "Rainfall")
+		    df1 = outlier(df1, "Price_house")
+
+		    # %%
+		    df1.boxplot(column=["Hospital_dist"])
+
+		    # %%
+		    df1.boxplot(column=["Carpet_area"])
+
+		    # %%
+		    df1.boxplot(column=["Builtup_area"])
+
+		    # %%
+		    df1.boxplot(column=["Rainfall"])
+
+		    # %%
+		    df1.boxplot(column=["Price_house"])
+
+		    # %%
+		    cat_ver = df1.loc[:, ["Parking_type", "City_type"]]
+
+		    # %%
+		    cat_ver.head()
+
+		    # %%
+		    df1 = df1.drop(["Parking_type", "City_type"], axis=1)
+
+		    # %%
+		    dummies = pd.get_dummies(cat_ver[["Parking_type", "City_type"]],drop_first=True)
+
+		    # %%
+		    dummies.head()
+
+		    # %%
+		    df_final = pd.concat([df1,dummies], axis=1)
+
+		    # %%
+		    df_final.head()
+
+		    # %%
+		    X = df_final.drop(['Price_house'], axis=1)
+		    y = df_final['Price_house']
+
+		    # %%
+		    X.head()
+
+		    # %%
+		    y.head()
+
+		    # %%
+		    from sklearn.model_selection import train_test_split 
+
+		    # %%
+		    X_train, X_test, y_train, y_test = train_test_split(X,y , test_size=0.3, random_state=10)
+
+		    # %%
+		    X_train.shape
+
+		    # %%
+		    X_test.shape
+
+		    # %%
+		    from sklearn.linear_model import LinearRegression
+		    reg = LinearRegression()
+
+		    # %%
+		    reg.fit(X_train,y_train)
+
+		    # %%
+		    reg.score(X_test,y_test)
+
+		    # %%
+		    import pickle
+
+		    # %%
+		    with open("house_model" , 'wb') as f:
+		        pickle.dump(reg,f)
+
+			# %%
+			with open("house_model" , 'rb')as f:
+			    rf=pickle.load(f)
+
+			    # %%
+			    result = rf.predict(X_test)
+
+			    # %%
+			    pred_res = pd.DataFrame(result)
+
+			    # %%
+			    pred_res.head() 
+
+			    # %%
+			    final_prd_res=pd.concat([X_test,pred_res], axis=1)
+
+			    # %%
+			    final_prd_res.to_csv("h_p_result.csv")
