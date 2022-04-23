@@ -1,0 +1,166 @@
+import pandas as pd
+import numpy as np
+import os
+
+# %%
+os.chdir("D:\Data Science\Python\Linear Regression")
+df = pd.read_csv("car dekho1.csv")
+
+# %%
+df.head()
+
+# %%
+df.drop(["name"], axis=1, inplace=True)
+
+# %%
+df.head()
+
+# %%
+df.info()
+
+# %%
+df.isnull().sum()
+
+# %%
+df1=df.dropna()
+
+# %%
+df1.isnull().sum()
+
+# %%
+def outlier (data,age):
+    Q1 = data[age].quantile(0.25)
+        Q3 = data[age].quantile(0.75)
+	    IQR = Q3 - Q1
+	        data = data.loc[~((data[age]< (Q1 - 1.5*IQR)) | (data[age] > (Q3 + 1.5 * IQR))),]
+		    return data
+
+		    # %%
+		    df1.boxplot(column=["selling_price"])
+
+
+		    # %%
+		    df1 = outlier(df1,"selling_price")
+		    df1.boxplot(column=["selling_price"])
+
+		    # %%
+		    df1.boxplot(column=["km_driven"])
+
+		    # %%
+		    df1= outlier(df,"km_driven")
+
+		    # %%
+		    df1.boxplot(column=["km_driven"])
+
+		    # %%
+		    df1.boxplot(column=["age_car"])
+
+		    # %%
+		    from sklearn.preprocessing import LabelEncoder
+		    le = LabelEncoder()
+
+		    # %%
+		    cat_ver = df1.loc[:, ["fuel","seller_type","transmission","owner"]]
+
+		    # %%
+		    cat_ver.head()
+
+		    # %%
+		    df1 = df1.drop(["fuel","seller_type","transmission","owner"], axis=1)
+
+		    # %%
+		    cat_ver['fuel']= le.fit_transform(cat_ver["fuel"])
+		    cat_ver['seller_type']= le.fit_transform(cat_ver["seller_type"])
+		    cat_ver['transmission']= le.fit_transform(cat_ver["transmission"])
+		    cat_ver['owner']= le.fit_transform(cat_ver["owner"])
+
+		    # %%
+		    cat_ver.head()
+
+		    # %%
+		    df_final= pd.concat([df1,cat_ver], axis=1)
+
+		    # %%
+		    df_final.head()
+
+		    # %%
+		    X = df_final[["km_driven","age_car","fuel","seller_type","transmission","owner" ]].values
+		    #X = df_final[["age_car"]].values
+		    y = df_final["selling_price"].values
+
+
+		    # %%
+		    type(X),type(y)
+
+		    # %%
+		    y
+
+		    # %%
+		    X
+
+		    # %%
+		    from sklearn.preprocessing import OneHotEncoder
+		    from sklearn.compose import ColumnTransformer
+
+		    ct = ColumnTransformer([("age_car", OneHotEncoder(), [0])], remainder='passthrough')
+		    ct = ColumnTransformer([("fuel", OneHotEncoder(), [0])], remainder='passthrough')
+		    ct = ColumnTransformer([("seller_type", OneHotEncoder(), [0])], remainder='passthrough')
+		    ct = ColumnTransformer([("transmission", OneHotEncoder(), [0])], remainder='passthrough')
+		    ct = ColumnTransformer([("owner", OneHotEncoder(), [0])], remainder='passthrough')
+
+		    #,"fuel","seller_type","transmission","owner"]
+
+
+		    # %%
+		    X = ct.fit_transform(X)
+		    X.toarray()
+
+		    # %%
+		    from sklearn.model_selection import train_test_split 
+		    X_train, X_test, y_train, y_test = train_test_split(X,y , test_size=0.3, random_state=10)
+
+		    # %%
+		    X_train.shape
+
+		    # %%
+		    X_test.shape
+
+		    # %%
+		    y_train.shape
+
+		    # %%
+		    y_test.shape
+
+		    # %%
+		    from sklearn.linear_model import LinearRegression
+		    reg = LinearRegression()
+
+		    # %%
+		    reg.fit(X_train,y_train)
+
+		    # %%
+		    reg.score(X_test,y_test)
+
+		    # %%
+		    reg.predict(X_test)
+
+		    # %%
+		    import joblib
+
+		    # %%
+		    joblib.dump(reg, 'pred_car')
+
+		    # %%
+		    reg_job =joblib.load('pred_car')
+
+		    # %%
+		    result = reg_job.predict(X_test)
+
+		    # %%
+		    result
+
+		    # %%
+		    pred_res = pd.DataFrame(result)
+
+		    # %%
+		    pred_res.head()
